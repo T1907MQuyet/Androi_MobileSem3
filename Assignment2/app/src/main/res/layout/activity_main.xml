@@ -56,7 +56,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/tvContent"
-            android:text="Dang di choi thi troi do mua"
+            android:text="Nguyen Van Quyet"
             android:layout_below="@+id/imgBody"
             android:layout_margin="10dp"
             android:textStyle="bold"
