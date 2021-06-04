@@ -3,52 +3,88 @@
  import androidx.appcompat.app.AppCompatActivity;
 
  import android.os.Bundle;
+ import android.view.View;
+ import android.widget.AdapterView;
  import android.widget.ImageView;
  import android.widget.ListView;
  import android.widget.TextView;
+ import android.widget.Toast;
 
  import java.util.ArrayList;
  import java.util.List;
 
  public class MainActivity extends AppCompatActivity implements IOnChildItemClick{
-
-     private List<ContactModel> listContact = new ArrayList<>();
      private ListView lvContact;
-     private ContactAdapter mAdapter;
+     private List<ContactModel> listContacts = new ArrayList<>();
+     private  ContactAdapter mAdaper;
      private ImageView ivUser;
      private TextView tvName;
-
 
      @Override
      protected void onCreate(Bundle savedInstanceState) {
          super.onCreate(savedInstanceState);
          setContentView(R.layout.activity_main);
-     }
+         initData();
+         initView();
+         mAdaper = new ContactAdapter( listContacts, this);
+         mAdaper.registerChildItemClick(this);
 
-     private void initView()
-     {
-         lvContact = (ListView)findViewById(R.id.lvContact);
+         lvContact.setAdapter(mAdaper);
+         lvContact.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+             @Override
+             public void onItemClick(AdapterView<?> parent, View view, int i, long l) {
+                 ContactModel model = listContacts.get(i);
+                 Toast.makeText(MainActivity.this, model.getName()+":"+ model.getPhone(),Toast.LENGTH_SHORT).show();
+             }
+         });
+
+
+         lvContact.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+             @Override
+             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                 ContactModel contactModel = listContacts.get(position);
+                 Toast.makeText(MainActivity.this,contactModel.getName(),Toast.LENGTH_SHORT).show();
+             }
+         });
+     }
+     private  void initView(){
+         lvContact = (ListView) findViewById(R.id.lvContact);
          ivUser = (ImageView) findViewById(R.id.ivUser);
-         tvName = (TextView)findViewById(R.id.tvName);
-     }
+         tvName =(TextView) findViewById(R.id.tvName);
 
-     private void initData()
-     {
-         listContact.add(new ContactModel("Tran A","09999999",R.drawable.male02));
-         listContact.add(new ContactModel("Tran B","011111111",R.drawable.male02));
-         listContact.add(new ContactModel("Tran C","022222222",R.drawable.male02));
-         listContact.add(new ContactModel("Tran D","033333333",R.drawable.male02));
-         listContact.add(new ContactModel("Tran E","044444444",R.drawable.male02));
-         listContact.add(new ContactModel("Tran F","055555555",R.drawable.male02));
-         listContact.add(new ContactModel("Tran G","066666666",R.drawable.male02));
-         listContact.add(new ContactModel("Tran H","077777777",R.drawable.male02));
      }
+     private  void  initData(){
 
+         ContactModel contact = new ContactModel("Nguyen Van Manh","03325325",R.drawable.user1);
+         listContacts.add(contact);
+         contact = new ContactModel("Tran Hoai Anh","0765432",R.drawable.user1);
+         listContacts.add(contact);
+         contact = new ContactModel("Nguyen Van Anh","0765432",R.drawable.user2);
+         listContacts.add(contact);
+         contact = new ContactModel("Tran Trung Kien","0765432",R.drawable.user3);
+         listContacts.add(contact);
+         contact = new ContactModel("Hoang Hai Minh","0765432",R.drawable.user1);
+         listContacts.add(contact);
+         contact = new ContactModel("Hoang Quooc Khanh","0765432",R.drawable.user2);
+         listContacts.add(contact);
+         contact = new ContactModel("Trinh Kim Anh","0765432",R.drawable.user1);
+         listContacts.add(contact);
+         contact = new ContactModel("Nguyen Hai Van","0765432",R.drawable.user1);
+         listContacts.add(contact);
+         contact = new ContactModel("Doan Ba Hung","0765432",R.drawable.user1);
+         listContacts.add(contact);
+         contact = new ContactModel("Truong Tan Thanh","0765432",R.drawable.user1);
+         listContacts.add(contact);
+
+     }
      @Override
-     protected void onDestroy() {
+     protected  void  onDestroy(){
          super.onDestroy();
+         mAdaper.unRegisterChildItemClick();
 
      }
-
-
+     public  void onItemChildClick(int position){}
+     ContactModel contact = listContacts.get(position);
+    ivUser.setImageResource(contact.getImage());
+    tvName.setText(contact.getName());
  }

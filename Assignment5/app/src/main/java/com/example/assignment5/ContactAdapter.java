@@ -14,31 +14,34 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.List;
-
 import androidx.core.app.ActivityCompat;
 
-public class ContactAdapter extends BaseAdapter {
-    private Context mContext;
-    private List<ContactModel> listContact;
-    private IOnChildItemClick iOnChildItemClick;
+import java.util.List;
 
-    public ContactAdapter(Context mContext, List<ContactModel> listContact) {
+public class ContactAdapter extends BaseAdapter {
+    private List<ContactModel> listContacts;
+    private Context mContext;
+    private IOnChildItemClick  iOnChildItemClick;
+
+
+    public ContactAdapter(List<ContactModel> listContacts,Context mContext){
+        this.listContacts =listContacts;
         this.mContext = mContext;
-        this.listContact = listContact;
+
     }
-    public void registerChildItemClick(IOnChildItemClick iOnChildItemClick)
-    {
+
+    public  void registerChildItemClick(IOnChildItemClick iOnChildItemClick){
         this.iOnChildItemClick = iOnChildItemClick;
     }
-    public void unRegisterChildItemClick()
-    {
-        this.iOnChildItemClick = null;
+    public  void unRegisterChildItemClick(){
+        this.iOnChildItemClick= null;
+
     }
+
 
     @Override
     public int getCount() {
-        return listContact.size();
+        return listContacts.size();
     }
 
     @Override
@@ -52,29 +55,30 @@ public class ContactAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final  int i, View convertView, ViewGroup ViewGroup) {
         View rowView = convertView;
-        if (rowView == null)
-        {
+
+        if (rowView == null){
             LayoutInflater inflater = ((Activity)mContext).getLayoutInflater();
             rowView = inflater.inflate(R.layout.item_contact,null);
-
             ViewHolder holder = new ViewHolder();
             holder.tvName = (TextView)rowView.findViewById(R.id.tvName);
             holder.tvPhone = (TextView)rowView.findViewById(R.id.tvPhone);
-            holder.ivAvatar = (ImageView)rowView.findViewById(R.id.ivAvatar);
+            holder.ivAvatar =(ImageView)rowView.findViewById(R.id.ivAvatar);
             holder.btCall = (Button) rowView.findViewById(R.id.btCall);
-            holder.btEdit = (Button) rowView.findViewById(R.id.btEdit);
+            holder.btEdit = (Button) rowView.findViewById(R.id.btEdit) ;
             rowView.setTag(holder);
+
+
         }
-        ViewHolder holder = (ViewHolder) rowView.getTag();
-        holder.tvName.setText(listContact.get(i).getName());
-        holder.tvPhone.setText(listContact.get(i).getPhone());
-        holder.ivAvatar.setImageResource(listContact.get(i).getImage());
+        ViewHolder holder = (ViewHolder) convertView.getTag();
+        holder.tvName.setText(listContacts.get(i).getName());
+        holder.tvPhone.setText(listContacts.get(i).getPhone());
+        holder.ivAvatar.setImageResource(listContacts.get(i).getImage());
 
         holder.btCall.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 onCall(i);
             }
         });
@@ -84,25 +88,23 @@ public class ContactAdapter extends BaseAdapter {
                 iOnChildItemClick.onItemChildClick(i);
             }
         });
-        return null;
+        return  rowView;
     }
-
-    private void onCall(int position)
-    {
-        ContactModel contact = listContact.get(position);
-        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:"+contact.getPhone()));
-        if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.CALL_PHONE)!= PackageManager.PERMISSION_GRANTED)
-        {
+    private  void onCall(int position){
+        ContactModel contact = listContacts.get(position);
+        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tell:" +contact.getPhone()));
+        if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.CALL_PHONE)
+                != PackageManager.PERMISSION_GRANTED){
             return;
         }
-        mContext.startActivities(intent);
+        mContext.startActivity(intent);
     }
-    static class ViewHolder{
+
+    static  class ViewHolder{
         TextView tvName;
         TextView tvPhone;
         ImageView ivAvatar;
         Button btCall;
-        Button btEdit;
+        Button btEdit ;
     }
 }
-
