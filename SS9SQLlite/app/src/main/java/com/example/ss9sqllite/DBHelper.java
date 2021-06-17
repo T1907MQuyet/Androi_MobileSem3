@@ -16,75 +16,71 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME = "TBL_USER";
     public static final int DB_VERSION = 1;
 
-    public DBHelper(@Nullable Context context) {
+    public static  String ID = "id";
+    public static String NAME = "name";
+    public static String GENDER = "gender";
+    public static String DES ="des";
+
+    public DBHelper( Context context) {
         super(context, DB_NAME, null, DB_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         String sql = "CREATE TABLE "+TABLE_NAME+"("+
-                TBL_USER.id+" INTEGER PRIMARY KEY, "+
-                TBL_USER.name+" TEXT, "+
-                TBL_USER.age+ " INTEGER, "+
-                TBL_USER.gender+ " TEXT )";
+                ID+" INTEGER PRIMARY KEY, "+
+                NAME+" TEXT, "+
+                GENDER+ " TEXT, "+
+                DES+ " TEXT )";
         db.execSQL(sql);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int i, int i1) {
-
+        String sql = "DROP TABLE IF EXISTS "+ TABLE_NAME;
+        db.execSQL(sql);
+        onCreate(db);
     }
 
-    public String insertDB(User user)
+    public String insertDB(String user,String gender, String des)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
-        cv.put(TBL_USER.name, user.getName());
-        cv.put(TBL_USER.age, user.getAge());
-        cv.put(TBL_USER.gender, user.getGender());
+        cv.put(NAME, user);
+        cv.put(GENDER, gender);
+        cv.put(DES,des);
         long isSuccess = db.insert(TABLE_NAME,null,cv);
-        if (isSuccess>0)
-        {
-            return "Success";
-        }else {
-            return "Fail";
-        }
+       if (isSuccess == -1 )
+       {
+           return "Add Fail";
+       }
+       db.close();
+       return "Add success";
     }
 
-    public List<User> getAllUser()
+    public Cursor getAllUser()
     {
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = this.getReadableDatabase();
         String sql = "SELECT * FROM "+TABLE_NAME;
-        List<User> listUser = new ArrayList<>();
-        Cursor cursor = db.rawQuery(sql,null);
-        if (cursor.getCount()>0)
-        {
-            cursor.moveToFirst();
-            do {
-                User user = new User();
-                user.setName(cursor.getString(cursor.getColumnIndex(TBL_USER.name)));
-                user.setGender(cursor.getString(cursor.getColumnIndex(TBL_USER.gender)));
-                user.setId(cursor.getInt(cursor.getColumnIndex(TBL_USER.id)));
-                user.setAge(cursor.getInt(cursor.getColumnIndex(TBL_USER.age)));
-                listUser.add(user);
-            }while (cursor.moveToNext());
-        }
-        return listUser;
+        Cursor c = db.rawQuery(sql,null);
+        return c;
     }
 
-    public String updateUser(User user)
+    public String updateUser(int id, String user, String gender, String des)
     {
         SQLiteDatabase db =this.getWritableDatabase();
         ContentValues cv = new ContentValues();
-        cv.put(TBL_USER.name,user.getName());
-        cv.put(TBL_USER.age,user.getAge());
-        long isSuccess = db.update(TABLE_NAME,cv,"id="+user.getId(),null);
+        cv.put(NAME,user);
+        cv.put(GENDER,gender);
+        cv.put(DES,des);
+        long isSuccess = db.update(TABLE_NAME,cv,ID+ " = ?",new String[]{id+""});
         if (isSuccess>0)
         {
             return "Update Success";
         }
         else
         {
+            db.close();
             return "Update fail";
         }
     }
