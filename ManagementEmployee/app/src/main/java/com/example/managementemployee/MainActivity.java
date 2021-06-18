@@ -62,15 +62,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         db.employeeDao().insertEmployee(employeeEntity);
     }
 
-    private void insertEmployee()
-    {
-        Employees em = new Employees();
-        em.employeename = edEmployeeName.getText().toString();
-        em.designation = edEmployeeName.getText().toString();
-        em.salary = edSalary.getText().toString();
-        db.employeeDao().insertEmployee(em);
-
-    }
     private void updateEmployee(int id){
         Employees em = db.employeeDao().getBookmark(id);
         em.employeename = edEmployeeName.getText().toString();
@@ -94,6 +85,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }else{
             listEmp = db.employeeDao().getAllBookmark();
         }
+
+    }
+    private void insertEmployee()
+    {
+        Employees em = new Employees();
+        em.employeename = edEmployeeName.getText().toString();
+        em.designation = edEmployeeName.getText().toString();
+        em.salary = edSalary.getText().toString();
+        db.employeeDao().insertEmployee(em);
 
     }
 
