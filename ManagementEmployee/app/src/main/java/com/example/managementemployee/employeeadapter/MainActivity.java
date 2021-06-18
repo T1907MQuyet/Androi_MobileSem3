@@ -1,194 +1,118 @@
 package com.example.managementemployee.employeeadapter;
 
-import android.content.ContentValues;
-import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.view.ContextMenu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-
 import com.example.managementemployee.R;
+import com.example.managementemployee.employeeadapter.adapter.EmployeeAdapter;
+import com.example.managementemployee.employeeadapter.data.DatabaseHelper;
+import com.example.managementemployee.employeeadapter.entity.Employees;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    Button btAdd, btUpdate, btDelete;
+    EditText edEmployeeName, edDesignation, edSalary;
+    DatabaseHelper db;
+    EmployeeAdapter employeeAdapter;
+    RecyclerView recyclerView;
+    List<Employees> listEmp = new ArrayList<>();
 
-    private ArrayList<Employee> emp;
-    private ArrayAdapter<Employee> employeeAdpater;
-    private ListView listView;
-    private DatabaseHelper dbHelper;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        edEmployeeName = findViewById(R.id.edEmployeeName);
+        edDesignation = findViewById(R.id.edDesignation);
+        edSalary = findViewById(R.id.edSalary);
+        btAdd = findViewById(R.id.add);
+        btUpdate = findViewById(R.id.update);
+        btDelete = findViewById(R.id.delete);
+        btAdd.setOnClickListener(this::onClick);
+        btUpdate.setOnClickListener(this::onClick);
+        btDelete.setOnClickListener(this::onClick);
+        initData();
+        getAllEmployee();
+        employeeAdapter = new EmployeeAdapter(MainActivity.this,listEmp);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this,1);
+        recyclerView = findViewById(R.id.rcListEmployee);
+        recyclerView.setLayoutManager(gridLayoutManager);
+        recyclerView.setAdapter(employeeAdapter);
 
-       //Declare emp ArrayList
-        emp = new ArrayList<>();
+        db = DatabaseHelper.getAppDatabase(this);
 
-        //Find LisView by ID
-        listView = (ListView) findViewById(R.id.list_view);
-
-        Button addButton = (Button) findViewById(R.id.add_employee);
-
-        Button readButton = (Button)findViewById(R.id.read_employee);
-
-        //Create an adapter for Employee
-        employeeAdpater = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, emp);
-
-        //Bind it with the ListView
-        listView.setAdapter(employeeAdpater);
-        registerForContextMenu(listView);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-
-                Employee e = emp.get(position);
-                manageEmployee(Long.toString(e.getId()));
-            }
-        });
-
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                //Find IDs of Text fields and assign them to the variables of EditText type
-                EditText fNametxt = (EditText) findViewById(R.id.first_name);
-                EditText lNametxt = (EditText) findViewById(R.id.last_name);
-
-                //Read data from user entered in text fields and add it to the emp ArrayList by calling the
-                //constructor of Employee class, also convert the data toString b/c getText returns
-                // Char sequence and Constructor takes string as input
-
-//                emp.add(new Employee(fNametxt.getText().toString(), lNametxt.getText().toString()));
-
-                dbHelper = new DatabaseHelper(MainActivity.this);
-                SQLiteDatabase sqLiteDatabase = dbHelper.getWritableDatabase();
-
-                // Create a new map of values, where column names are the keys
-                ContentValues values = new ContentValues();
-                values.put(DatabaseContract.Employees.COL_FIRSTNAME, fNametxt.getText().toString());
-                values.put(DatabaseContract.Employees.COL_SECONDNAME, lNametxt.getText().toString());
-
-//                long insert (String table, String nullColumnHack, ContentValues values)
-//                long: 	the row ID of the newly inserted row, or -1 if an error occurred
-                long newRowId = sqLiteDatabase.insert(DatabaseContract.Employees.TABLE_NAME, null, values);
-                if (newRowId > 0) {
-                    Toast.makeText(MainActivity.this, "New Record Inserted: " + newRowId, Toast.LENGTH_SHORT).show();
-                }
-
-                sqLiteDatabase.close(); // Closing database connection
-
-                //Clear the text fields after reading the data
-                fNametxt.setText("");
-                lNametxt.setText("");
-//                populateList();
-//                employeeAdpater.notifyDataSetChanged();
-            }
-        });
-
-        readButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-            populateList();
-            }
-        });
+    }
+    public void initData()
+    {
+        Employees employeeEntity = new Employees();
+        employeeEntity.employeename = "nguyen a";
+        employeeEntity.designation = "demo";
+        employeeEntity.salary = "23121";
+        db.employeeDao().insertEmployee(employeeEntity);
     }
 
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
+    private void insertEmployee()
+    {
+        Employees em = new Employees();
+        em.employeename = edEmployeeName.getText().toString();
+        em.designation = edEmployeeName.getText().toString();
+        em.salary = edSalary.getText().toString();
+        db.employeeDao().insertEmployee(em);
 
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.context_menu,menu);
+    }
+    private void updateEmployee(int id){
+        Employees em = db.employeeDao().getBookmark(id);
+        em.employeename = edEmployeeName.getText().toString();
+        em.designation = edEmployeeName.getText().toString();
+        em.salary = edSalary.getText().toString();
+        db.employeeDao().updateEmployee(em);
+    }
+    private void deleteEmployee(int id){
+        Employees em = db.employeeDao().getBookmark(id);
+        db.employeeDao().deleteEmployee(em);
+    }
+    private void findEmployee(int id){
+        Employees em = db.employeeDao().getBookmark(id);
+    }
+    private void getAllEmployee()
+    {
+        if (db.employeeDao().getAllBookmark()!=null)
+        {
+            listEmp = db.employeeDao().getAllBookmark();
+            employeeAdapter.reloadData(listEmp);
+        }else{
+            listEmp = db.employeeDao().getAllBookmark();
+        }
+
     }
 
+
+    @SuppressLint("ResourceType")
     @Override
-    public boolean onContextItemSelected(MenuItem item) {
-
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-
-        switch (item.getItemId()){
-            case R.id.details:
-                //Toast.makeText(this, "Details for Employee "+ emp.get(info.position).getfName() + " "+ emp.get(info.position).getlName(),Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(this, EmployeeDetails.class);
-                intent.putExtra("fName",emp.get(info.position).getfName());
-                intent.putExtra("lName",emp.get(info.position).getlName());
-                startActivity(intent);
-
+    public void onClick(View v) {
+        switch (v.getId())
+        {
+            case R.id.add:
+                insertEmployee();
+                Toast.makeText(this, "Insert success", Toast.LENGTH_LONG).show();
                 break;
-            case R.id.help:
-                Toast.makeText(this, "Help for Employee ",Toast.LENGTH_SHORT).show();
+            case R.id.update:
                 break;
-
             case R.id.delete:
-                //Removes from the ListView only, not from the database
-                emp.remove(info.position);
-                // Notifies the attached observers that the underlying data is no longer valid or available.
-                // Once invoked this adapter is no longer valid and should not report further data set changes.
-                employeeAdpater.notifyDataSetChanged();
                 break;
-
             default:
+                break;
         }
-        return super.onContextItemSelected(item);
-    }
-
-    public void manageEmployee(String id){
-        Intent i = new Intent(this, ManageEmployeeActivity.class);
-        i.putExtra(DatabaseContract.Employees._ID,String.valueOf(id));
-        startActivityForResult(i,1);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        populateList();
-    }
-
-    private void populateList(){
-        //Emptying the emp ListArray
-        emp.clear();
-
-        dbHelper = new DatabaseHelper(MainActivity.this);
-        SQLiteDatabase sqLiteDatabase = dbHelper.getReadableDatabase();
-
-        String[] columns = { DatabaseContract.Employees._ID, DatabaseContract.Employees.COL_FIRSTNAME, DatabaseContract.Employees.COL_SECONDNAME };
-
-        //String sortOrder = Employees.COL_FIRSTNAME + " ASC";
-        String sortOrder = DatabaseContract.Employees._ID + " ASC";
-
-//        query(String table, String[] columns, String selection, String[] selectionArgs,
-//        String groupBy, String having, String orderBy, String limit)
-//        Query the given table, returning a Cursor over the result set.
-//        Cursor is an interface that provides random read-write access to the result set returned by a database query.
-
-        Cursor c = sqLiteDatabase.query(DatabaseContract.Employees.TABLE_NAME, columns, null, null, null, null, sortOrder);
-
-        while (c.moveToNext()) {
-            Employee e = new Employee();
-
-//            getString(int columnIndex)
-//            Returns the value of the requested column as a String.
-            e.setId(c.getLong(0));
-            e.setfName(c.getString(1));
-            e.setlName(c.getString(2));
-            emp.add(e);
-        }
-        employeeAdpater.notifyDataSetChanged();
-        c.close();
     }
 }
